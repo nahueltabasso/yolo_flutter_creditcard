@@ -7,12 +7,19 @@ class YoloProcessEvent extends Equatable {
   List<Object> get props => [];
 }
 
+
+class InitPicker extends YoloProcessEvent {
+  
+  final ImageSource source;
+ 
+  const InitPicker(this.source);
+}
+
 class LoadImage extends YoloProcessEvent {
 
-  final ImageSource source;
   final String image;
 
-  const LoadImage({required this.source, required this.image});
+  const LoadImage({required this.image});
 
   @override
   List<Object> get props => [image!];

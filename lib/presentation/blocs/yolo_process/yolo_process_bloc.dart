@@ -10,16 +10,22 @@ part 'yolo_process_state.dart';
 class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
   YoloProcessBloc() : super(YoloProcessState()) {
     on<YoloProcessEvent>((event, emit) {
-      // TODO: implement event handler
+      on<InitPicker>((event, emit) => initPicker(event, emit));
+      on<LoadImage>((event, emit) => loadImage(event, emit));  
     });
   }
 
+  Future<void> initPicker(InitPicker event, Emitter<YoloProcessState> emit) async {
+    emit(state.copyWith(
+      imageSource: event.source,
+    ));
+  }
 
   Future<void> loadImage(LoadImage event, Emitter<YoloProcessState> emit) async {
-    final ImagePicker _picker = ImagePicker();
-    final XFile? image = await _picker.pickImage(source: event.source);
-    if (image != null) {
-      emit(state.copyWith(image: File(image.path)));
+    final selectedFile = await ImagePicker().pickImage(source: state.imageSource);
+    if (selectedFile != null) {
+      final image = File(selectedFile.path);
+      emit(state.copyWith(image: image, imageUrl: selectedFile.path));
     }
   }
 }

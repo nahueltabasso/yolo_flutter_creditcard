@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_yolo_creditcard/presentation/blocs/yolo_process/yolo_process_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
-
   static const String routeName = '/';
 
   String? image;
@@ -15,7 +15,17 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
 
-    return _HomeView(image: image, size: size);
+    // return _HomeView(image: image, size: size);
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Credit Card Validator'),
+        centerTitle: true,
+      ),
+      body: BlocProvider(
+        create: (context) => YoloProcessBloc(),
+        child: _HomeView(image: image, size: size),
+      ),
+    );
   }
 }
 
@@ -31,26 +41,19 @@ class _HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Credit Card Validator'),
-        centerTitle: true,
-      
-      ),
-      body: Center(
+    return SafeArea(
+      child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            if (image != null) 
+            if (image != null)
               Image.file(
                 File(image!),
                 width: size.width,
                 height: 400,
                 fit: BoxFit.cover,
               ),
-    
-            if (image == null) const _InitLegend(),  
-    
+            if (image == null) const _InitLegend(),
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: CheckboxListTile(
@@ -59,47 +62,40 @@ class _HomeView extends StatelessWidget {
                 onChanged: (newValue) {
                   print(newValue);
                 },
-                controlAffinity: ListTileControlAffinity.leading,  //  <-- leading Checkbox
+                controlAffinity:
+                    ListTileControlAffinity.leading, //  <-- leading Checkbox
               ),
             ),
-    
             const SizedBox(height: 20),
-    
             SizedBox(
               width: size.width * 0.9,
               child: ElevatedButton(
-                onPressed: () {},
-                child: Text('Abrir Camara', style: const TextStyle(color: Colors.white))
-              ),
+                  onPressed: () {},
+                  child: Text('Abrir Camara',
+                      style: const TextStyle(color: Colors.white))),
             ),
-    
             const SizedBox(height: 15),
-    
             SizedBox(
               width: size.width * 0.9,
               child: ElevatedButton(
-                onPressed: () {},
-                child: Text('Abrir Galeria', style: const TextStyle(color: Colors.white))
-              ),
+                  onPressed: () {},
+                  child: Text('Abrir Galeria',
+                      style: const TextStyle(color: Colors.white))),
             ),
-    
             const SizedBox(height: 15),
-    
             SizedBox(
               width: size.width * 0.9,
               child: ElevatedButton(
-                onPressed: () {},
-                child: Text('Procesar', style: const TextStyle(color: Colors.white))
-              ),
+                  onPressed: () {},
+                  child: Text('Procesar',
+                      style: const TextStyle(color: Colors.white))),
             ),
-    
           ],
         ),
       ),
     );
   }
 }
-
 
 class _InitLegend extends StatelessWidget {
   const _InitLegend({
@@ -115,12 +111,12 @@ class _InitLegend extends StatelessWidget {
           backgroundColor: Colors.green,
           child: Icon(Icons.credit_card_sharp, size: 100, color: Colors.white),
         ),
-
         Container(
           width: double.infinity,
           height: 150,
           child: const Center(
-            child: Text("Primero seleccionar una imagen", style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text("Primero seleccionar una imagen",
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),
       ],

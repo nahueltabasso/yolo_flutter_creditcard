@@ -8,19 +8,28 @@ class YoloProcessEvent extends Equatable {
 }
 
 
-class InitPicker extends YoloProcessEvent {
-  
-  final ImageSource source;
- 
-  const InitPicker(this.source);
-}
+class SetCreditCardImage extends YoloProcessEvent {
+  final String imageUrl;
 
-class LoadImage extends YoloProcessEvent {
-
-  final String image;
-
-  const LoadImage({required this.image});
+  const SetCreditCardImage(this.imageUrl);
 
   @override
-  List<Object> get props => [image!];
+  List<Object> get props => [];
+}
+
+class SetYOLOv10Flag extends YoloProcessEvent {
+  final bool yolov10;
+
+  const SetYOLOv10Flag(this.yolov10);
+
+  @override
+  List<Object> get props => [yolov10];
+}
+
+class OnSubmit extends YoloProcessEvent {
+
+  const OnSubmit();
+
+  @override
+  List<Object> get props => [];
 }

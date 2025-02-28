@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_yolo_creditcard/models/card_data_dto.dart';
 import 'package:flutter_yolo_creditcard/presentation/blocs/yolo_process/yolo_process_bloc.dart';
-import 'package:flutter_yolo_creditcard/services/api_service.dart';
 
 class ResultScreen extends StatelessWidget {
   static const String routeName = '/results';
@@ -16,12 +15,7 @@ class ResultScreen extends StatelessWidget {
         title: const Text('Data Extracted'),
         centerTitle: true,
       ),
-      body: BlocProvider(
-        create: (context) => YoloProcessBloc(
-          apiService: context.read<ApiService>(),
-        ),
-        child: _ResultsView(),
-      ),
+      body: _ResultsView(),
     );
   }
 }
@@ -34,7 +28,6 @@ class _ResultsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     CardDataDto cardDataDto = context.select((YoloProcessBloc bloc) => bloc.state.cardDataDto);
-    print('numero - ${cardDataDto.cardNumber}');
     return Form(
       child: Column(
         children: [
@@ -92,6 +85,14 @@ class _ResultsView extends StatelessWidget {
               enabled: false,
             ),
           ),
+          const SizedBox(height: 30),
+          Padding(
+            padding: const EdgeInsets.only(left: 40, right: 40),
+            child: Text(
+              'The inference was made with ${cardDataDto.yoloV10! ? 'YOLOv10' : 'YOLOv8'}',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.normal, fontStyle: FontStyle.italic),  
+            ),
+          )
         ],
       ),
     );

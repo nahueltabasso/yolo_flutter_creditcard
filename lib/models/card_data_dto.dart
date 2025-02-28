@@ -7,6 +7,7 @@ class CardDataDto {
     String expiryDate;
     DateTime createAt;
     String obs;
+    bool? yoloV10;
 
     CardDataDto({
         required this.paymentNetwork,
@@ -15,6 +16,7 @@ class CardDataDto {
         required this.expiryDate,
         required this.createAt,
         required this.obs,
+        this.yoloV10
     });
 
     factory CardDataDto.fromRawJson(String str) => CardDataDto.fromJson(json.decode(str));

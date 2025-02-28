@@ -46,6 +46,7 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     if (state.yolov10) {
       print("Se ejecuta inferencia con YOLOv10 via API Rest");
       state.cardDataDto = (await _apiService.extractCreditCardDataWithYOLOv10(file))!;
+      state.cardDataDto.yoloV10 = true;
       print(state.cardDataDto.cardNumber);
       print(state.cardDataDto.cardholder);
       print(state.cardDataDto.expiryDate);

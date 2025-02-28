@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_yolo_creditcard/config/routes/app_router.dart';
 import 'package:flutter_yolo_creditcard/config/theme/app_theme.dart';
+import 'package:flutter_yolo_creditcard/presentation/blocs/yolo_process/yolo_process_bloc.dart';
 import 'package:flutter_yolo_creditcard/services/api_service.dart';
 import 'package:provider/provider.dart';
 
@@ -13,14 +15,13 @@ class AppState extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => ApiService()),
+        BlocProvider(create: (context) => YoloProcessBloc(apiService: context.read<ApiService>())),
       ],
       child: const MyApp(),
     );
   }
 
 }
-
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

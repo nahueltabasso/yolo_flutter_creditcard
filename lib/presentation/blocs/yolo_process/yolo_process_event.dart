@@ -35,3 +35,13 @@ class OnSubmit extends YoloProcessEvent {
   @override
   List<Object> get props => [context];
 }
+
+class ResetForm extends YoloProcessEvent {
+
+  final BuildContext context;
+
+  const ResetForm(this.context);
+
+  @override
+  List<Object> get props => [];
+}

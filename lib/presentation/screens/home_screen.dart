@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_yolo_creditcard/presentation/blocs/yolo_process/yolo_process_bloc.dart';
+import 'package:flutter_yolo_creditcard/presentation/widgets/custom_button.dart';
+import 'package:flutter_yolo_creditcard/presentation/widgets/custom_loading.dart';
 import 'package:image_picker/image_picker.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -68,10 +70,8 @@ class _HomeView extends StatelessWidget {
               ),
             if (image == null) const _InitLegend(),
 
-            const SizedBox(height: 10),
             if (context.select((YoloProcessBloc bloc) => bloc.state.isLoading))
-              const Center(child: CircularProgressIndicator()),
-            const SizedBox(height: 15),
+              CustomLoading(),
 
             Padding(
               padding: const EdgeInsets.all(15.0),
@@ -83,34 +83,32 @@ class _HomeView extends StatelessWidget {
                     ListTileControlAffinity.leading, //  <-- leading Checkbox
               ),
             ),
+            
             const SizedBox(height: 20),
-            SizedBox(
+            
+            CustomButton(
               width: size.width * 0.9,
-              child: ElevatedButton(
-                  // onPressed: () => context.read<YoloProcessBloc>().add(InitPicker(ImageSource.camera)),
-                  onPressed: () => _initPicker(context, ImageSource.camera),
-                  child: Text('Open Camera',
-                      style: const TextStyle(color: Colors.white))),
+              label: 'Open Camera',
+              onPressed: () => _initPicker(context, ImageSource.camera),
             ),
+            
             const SizedBox(height: 15),
-            SizedBox(
+            
+            CustomButton(
               width: size.width * 0.9,
-              child: ElevatedButton(
-                  // onPressed: () => context.read<YoloProcessBloc>().add(InitPicker(ImageSource.gallery)),
-                  onPressed: () => _initPicker(context, ImageSource.gallery),
-                  child: Text('Open Gallery',
-                      style: const TextStyle(color: Colors.white))),
+              label: 'Open Gallery',
+              onPressed: () => _initPicker(context, ImageSource.gallery),
             ),
+
             const SizedBox(height: 15),
-            SizedBox(
+            
+            CustomButton(
               width: size.width * 0.9,
-              child: ElevatedButton(
-                  onPressed: context.select((YoloProcessBloc bloc) => bloc.state.imageUrl).isEmpty
+              label: 'Process',
+              onPressed: context.select((YoloProcessBloc bloc) => bloc.state.imageUrl).isEmpty
                       ? null
                       : () => context.read<YoloProcessBloc>().add(OnSubmit(context)),
-                  child: Text('Process',
-                      style: const TextStyle(color: Colors.white))),
-            ),
+            )
           ],
         ),
       ),

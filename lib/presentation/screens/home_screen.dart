@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_yolo_creditcard/presentation/blocs/yolo_process/yolo_process_bloc.dart';
-import 'package:flutter_yolo_creditcard/services/api_service.dart';
 import 'package:image_picker/image_picker.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -19,11 +18,12 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Credit Card Extractor'),
         centerTitle: true,
       ),
-      body: BlocProvider(
-        create: (context) => YoloProcessBloc(
-          apiService: context.read<ApiService>()
-        ),
-        child: _HomeView(size: size),
+      // body: BlocProvider(
+      //   create: (context) => YoloProcessBloc(
+      //     apiService: context.read<ApiService>()
+      //   ),
+      //   child: _HomeView(size: size),
+      body: _HomeView(size: size,
       ),
     );
   }
@@ -52,7 +52,6 @@ class _HomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     print("SE DIBUJA");
     final imageUrl = context.select((YoloProcessBloc bloc) => bloc.state.imageUrl);
-    print('Imagen url home - $imageUrl');
     final image = imageUrl.isNotEmpty ? File(imageUrl) : null;
 
     return SafeArea(
@@ -77,7 +76,7 @@ class _HomeView extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: CheckboxListTile(
-                title: Text("Probar con YOLO_V10 via API Rest"),
+                title: Text("Testing with YOLOv10 via Rest API"),
                 value: context.select((YoloProcessBloc bloc) => bloc.state.yolov10),
                 onChanged: (value) => context.read<YoloProcessBloc>().add(SetYOLOv10Flag(value!)),
                 controlAffinity:
@@ -90,7 +89,7 @@ class _HomeView extends StatelessWidget {
               child: ElevatedButton(
                   // onPressed: () => context.read<YoloProcessBloc>().add(InitPicker(ImageSource.camera)),
                   onPressed: () => _initPicker(context, ImageSource.camera),
-                  child: Text('Abrir Camara',
+                  child: Text('Open Camera',
                       style: const TextStyle(color: Colors.white))),
             ),
             const SizedBox(height: 15),
@@ -99,7 +98,7 @@ class _HomeView extends StatelessWidget {
               child: ElevatedButton(
                   // onPressed: () => context.read<YoloProcessBloc>().add(InitPicker(ImageSource.gallery)),
                   onPressed: () => _initPicker(context, ImageSource.gallery),
-                  child: Text('Abrir Galeria',
+                  child: Text('Open Gallery',
                       style: const TextStyle(color: Colors.white))),
             ),
             const SizedBox(height: 15),
@@ -109,7 +108,7 @@ class _HomeView extends StatelessWidget {
                   onPressed: context.select((YoloProcessBloc bloc) => bloc.state.imageUrl).isEmpty
                       ? null
                       : () => context.read<YoloProcessBloc>().add(OnSubmit(context)),
-                  child: Text('Procesar',
+                  child: Text('Process',
                       style: const TextStyle(color: Colors.white))),
             ),
           ],

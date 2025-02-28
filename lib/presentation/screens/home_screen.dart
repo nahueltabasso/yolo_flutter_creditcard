@@ -14,11 +14,9 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
-
-    // return _HomeView(image: image, size: size);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Credit Card Validator'),
+        title: const Text('Credit Card Extractor'),
         centerTitle: true,
       ),
       body: BlocProvider(
@@ -70,14 +68,17 @@ class _HomeView extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             if (image == null) const _InitLegend(),
+
+            const SizedBox(height: 10),
+            if (context.select((YoloProcessBloc bloc) => bloc.state.isLoading))
+              const Center(child: CircularProgressIndicator()),
+            const SizedBox(height: 15),
+
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: CheckboxListTile(
                 title: Text("Probar con YOLO_V10 via API Rest"),
                 value: context.select((YoloProcessBloc bloc) => bloc.state.yolov10),
-                // onChanged: (newValue) {
-                //   print(newValue);
-                // },
                 onChanged: (value) => context.read<YoloProcessBloc>().add(SetYOLOv10Flag(value!)),
                 controlAffinity:
                     ListTileControlAffinity.leading, //  <-- leading Checkbox
@@ -107,7 +108,7 @@ class _HomeView extends StatelessWidget {
               child: ElevatedButton(
                   onPressed: context.select((YoloProcessBloc bloc) => bloc.state.imageUrl).isEmpty
                       ? null
-                      : () => context.read<YoloProcessBloc>().add(OnSubmit()),
+                      : () => context.read<YoloProcessBloc>().add(OnSubmit(context)),
                   child: Text('Procesar',
                       style: const TextStyle(color: Colors.white))),
             ),

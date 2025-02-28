@@ -4,25 +4,31 @@ class YoloProcessState extends Equatable {
 
   final bool yolov10;
   final String imageUrl;
+  final bool isLoading;
+  CardDataDto cardDataDto;
 
-  const YoloProcessState({
+  YoloProcessState({
     this.yolov10 = false,
-    this.imageUrl = '', 
-  });
+    this.imageUrl = '',
+    this.isLoading = false, 
+    CardDataDto? cardDataDto,
+  }) : cardDataDto = cardDataDto ?? CardDataDto.empty;
 
   YoloProcessState copyWith({
     bool? yolov10,
-    ImageSource? imageSource,
     String? imageUrl,
-    File? image,
+    bool? isLoading,
+    CardDataDto? cardDataDto, 
   }) {
     return YoloProcessState(
       yolov10: yolov10 ?? this.yolov10,
       imageUrl: imageUrl ?? this.imageUrl,
+      isLoading: isLoading ?? this.isLoading,
+      cardDataDto: cardDataDto ?? this.cardDataDto,
     );
   }
   
   @override
-  List<Object> get props => [yolov10, imageUrl];
+  List<Object> get props => [yolov10, imageUrl, isLoading, cardDataDto];
 }
 

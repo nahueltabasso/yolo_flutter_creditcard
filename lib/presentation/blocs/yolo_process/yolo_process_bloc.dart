@@ -1,10 +1,12 @@
 import 'dart:io';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_yolo_creditcard/models/card_data_dto.dart';
+import 'package:flutter_yolo_creditcard/presentation/screens/result_screen.dart';
 import 'package:flutter_yolo_creditcard/services/api_service.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:go_router/go_router.dart';
 
 part 'yolo_process_event.dart';
 part 'yolo_process_state.dart';
@@ -33,9 +35,9 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
   Future<void> onSubmit(OnSubmit event, Emitter<YoloProcessState> emit) async {
     emit(state.copyWith(
       imageUrl: state.imageUrl,
-      yolov10: state.yolov10
+      yolov10: state.yolov10,
+      isLoading: true,
     ));
-
     print('Submit state - $state');
 
     final file = File(state.imageUrl);
@@ -43,7 +45,21 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
 
     if (state.yolov10) {
       print("Se ejecuta inferencia con YOLOv10 via API Rest");
-      CardDataDto? cardDataDto = await _apiService.extractCreditCardData(file);
+      state.cardDataDto = (await _apiService.extractCreditCardDataWithYOLOv10(file))!;
+      print(state.cardDataDto.cardNumber);
+      print(state.cardDataDto.cardholder);
+      print(state.cardDataDto.expiryDate);
+      print(state.cardDataDto.paymentNetwork);
+      print(state.cardDataDto.obs);
+      print(state.cardDataDto.createAt);
+
+      emit(state.copyWith(
+        isLoading: false,
+        cardDataDto: state.cardDataDto,
+      )); 
+
+      print('State despues de la inferencia $state');
+      event.context.push(ResultScreen.routeName);
     } else {
       print("Se ejecuta inferencia con YOLOv8 en el dispositivo");
     }

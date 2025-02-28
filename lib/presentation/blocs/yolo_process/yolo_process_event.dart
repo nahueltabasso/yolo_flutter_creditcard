@@ -28,8 +28,10 @@ class SetYOLOv10Flag extends YoloProcessEvent {
 
 class OnSubmit extends YoloProcessEvent {
 
-  const OnSubmit();
+  final BuildContext context;
+
+  const OnSubmit(this.context);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [context];
 }

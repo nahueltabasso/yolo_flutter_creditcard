@@ -38,4 +38,14 @@ class CardDataDto {
         "create_at": createAt.toIso8601String(),
         "obs": obs,
     };
+
+    static final empty = CardDataDto(
+      paymentNetwork: '',
+      cardNumber: '',
+      cardholder: '',
+      expiryDate: '',
+      createAt: DateTime.now(),
+      obs: '',
+    );
+
 }

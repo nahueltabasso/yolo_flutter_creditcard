@@ -38,6 +38,10 @@ class _ResultsView extends StatelessWidget {
       return _InvalidImageMessage(onPressed: () => _resetForm(context));
     }
 
+    if (cardDataDto.cardNumber == "" && cardDataDto.cardholder == "" && cardDataDto.expiryDate == "") {
+      return _InvalidImageMessage(onPressed: () => _resetForm(context));
+    }
+
     return Form(
       child: Column(
         children: [

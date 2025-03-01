@@ -64,7 +64,7 @@ class _HomeView extends StatelessWidget {
             if (image != null)
               Image.file(
                 File(image.path),
-                width: size.width,
+                // width: size.width,
                 height: 400,
                 fit: BoxFit.cover,
               ),

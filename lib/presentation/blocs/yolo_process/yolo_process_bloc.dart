@@ -128,30 +128,32 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
         imageHeight: imageHeight, 
         imageWidth: imageWidth);
 
-        if (results.length > 1 || results.isEmpty) {
-          print("Invalid image");
-          return null;
-        }
+      if (results.length > 1 || results.isEmpty) {
+        print("Invalid image");
+        return null;
+      }
 
-        // Only 1 credit card detected
-        double factorX = size.width / imageWidth;
-        double factorY = size.height / imageHeight;
-        print("Results - ${results[0]['box']} - tag - ${results[0]['tag']}");
-        final box = results[0]['box'];
-        int left = (box[0] as double).toInt();
-        int top = (box[1] as double).toInt();
-        int width = ((box[2] - box[0]) as double).toInt();
-        int height = ((box[3] - box[1]) as double).toInt();
-        print("left=$left top=$top width=$width height=$height");
-        img.Image creditCard = img.copyCrop(image, x: left, y: top, width: width, height: height);
+      // Only 1 credit card detected
+      print("Results - ${results[0]['box']} - tag - ${results[0]['tag']}");
+      final box = results[0]['box'];
+      int left = box[0].toInt();
+      int top = box[1].toInt();
+      int right = box[2].toInt();
+      int bottom = box[3].toInt();
+      int width = right - left;
+      int height = bottom - top;
 
-        final tempDir = await getTemporaryDirectory();
-        final creditCardPath = '${tempDir.path}/credit_card.jpg';
-        File creditCardFile = File(creditCardPath);
-        await creditCardFile.writeAsBytes(img.encodeJpg(creditCard)); 
-        return creditCardFile;
+      img.Image croppedImage = img.copyCrop(image, x: left, y: top, width: width, height: height);
+
+      print("Credit card image - ${croppedImage.width} - ${croppedImage.height}");
+      final tempDir = await getTemporaryDirectory();
+      final creditCardPath = '${tempDir.path}/credit_card.jpg';
+      File creditCardFile = File(creditCardPath);
+      await creditCardFile.writeAsBytes(img.encodeJpg(croppedImage)); 
+      return creditCardFile;
     } catch (e) {
       print('ERROR: $e');
+      return null;
     }
   }
 }

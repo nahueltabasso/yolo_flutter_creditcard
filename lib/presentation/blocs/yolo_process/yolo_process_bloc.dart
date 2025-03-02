@@ -41,7 +41,6 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
   void _setCreditCardImage(SetCreditCardImage event, Emitter<YoloProcessState> emit) {
     final creditCardImage = event.imageUrl;
     print('Enter to setCreditCardImage');
-    print('SetCreditCardImage - $creditCardImage');
     emit(state.copyWith(imageUrl: creditCardImage));
   }
 
@@ -68,29 +67,24 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     print('Submit state - $state');
 
     final file = File(state.imageUrl);
-    print('File - $file');
-
     if (state.yolov10) {
-      print("Se ejecuta inferencia con YOLOv10 via API Rest");
+      print("Execute YOLOv10 inference through API Rest");
       state.cardDataDto = (await _apiService.extractCreditCardDataWithYOLOv10(file))!;
       state.cardDataDto.yoloV10 = true;
       emit(state.copyWith(
         isLoading: false,
         cardDataDto: state.cardDataDto,
       )); 
-
-      print('State despues de la inferencia $state');
       event.context.push(ResultScreen.routeName);
     } 
 
     if (!state.yolov10) {
-      print("Se ejecuta inferencia con YOLOv8 en el dispositivo");
-      print("Flutter vision $cardDetectorVision");
+      print("Execute YOLOv8 inference in mobile");
       if (cardDetectorVision == null) {
-        print("Entra 1");
         await _initYOLOModel(CARD_DETECTOR);
       }
-      print("Flutter vision iniciado $cardDetectorVision");
+
+      // Detect the card on image
       File? creditCard = await _getCreditCardFromImage(file);
       if (creditCard == null) {
         state.cardDataDto.obs = "Invalid image";
@@ -103,7 +97,6 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
 
       // Now extract the elements of a card
       if (cardElementsDetectorVision == null) {
-        print("Entra 2");
         await _initYOLOModel(CARD_ELEMENTS_DETECTOR);
       }
       CardElementsDto? cardElementsDto = await _getCardElements(creditCard);
@@ -114,13 +107,11 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
       // Extract card data from card elements
       CardDataDto? cardDataDto = await _extractDataFromCardElements(cardElementsDto!);
 
-      print(cardDataDto!.toJson().toString());
       // Classify the payment network
       _getPaymentNetwork(cardElementsDto.paymentNetworkFile, cardDataDto!);
 
-      print(cardDataDto!.toJson().toString());
 
-      state.cardDataDto = cardDataDto!;
+      state.cardDataDto = cardDataDto;
       emit(state.copyWith(
         isLoading: false,
         cardDataDto: state.cardDataDto,
@@ -330,43 +321,30 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
 
 
   Uint8List preprocessImage(Uint8List imageBytes, {bool save = false}) {
-    // Decodificar la imagen en formato Image de la librería 'image'
     img.Image? image = img.decodeImage(imageBytes);
     
     if (image == null) {
       throw Exception("Imagen no válida");
     }
 
-    // Convertir a escala de grises
     img.Image grayImage = img.grayscale(image);
 
-    // Aumentar el contraste (ajustar ganancia)
     double contrast = 1.5;
     img.Image contrastImage = adjustContrast(grayImage, contrast);
 
-    // Codificar la imagen procesada a bytes
     return Uint8List.fromList(img.encodeJpg(contrastImage));
   }
 
-  /// Ajusta el contraste de la imagen.
-  ///
-  /// - `image`: Imagen en escala de grises.
-  /// - `factor`: Factor de contraste (1.0 = sin cambios, >1 aumenta el contraste).
-  ///
-  /// Retorna la imagen con contraste ajustado.
   img.Image adjustContrast(img.Image image, double factor) {
     int width = image.width;
     int height = image.height;
     
     for (int y = 0; y < height; y++) {
       for (int x = 0; x < width; x++) {
-        img.Pixel pixel = image.getPixel(x, y); // Obtiene el color del píxel
-        num gray = img.getLuminance(pixel); // Extrae el nivel de gris
-        
-        // Aplicar ajuste de contraste
+        img.Pixel pixel = image.getPixel(x, y);
+        num gray = img.getLuminance(pixel); 
         int newGray = ((gray - 128) * factor + 128).clamp(0, 255).toInt();
         
-        // Crear un nuevo píxel en escala de grises y actualizar la imagen
         image.setPixel(x, y, img.ColorInt8.rgb(newGray, newGray, newGray));
       }
     }

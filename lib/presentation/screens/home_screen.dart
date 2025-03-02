@@ -40,19 +40,16 @@ class _HomeView extends StatelessWidget {
   final Size size;
 
   Future<void> _initPicker(BuildContext context, ImageSource source) async {
-    print("Inicia Picker");
     final selectedFile = await ImagePicker().pickImage(source: source);
     if (selectedFile != null) {
       final image = File(selectedFile.path);
       context.read<YoloProcessBloc>().add(SetCreditCardImage(selectedFile.path));
-      print("Se termino de ejecutar el picker");
     }
   }
 
 
   @override
   Widget build(BuildContext context) {
-    print("SE DIBUJA");
     final imageUrl = context.select((YoloProcessBloc bloc) => bloc.state.imageUrl);
     final image = imageUrl.isNotEmpty ? File(imageUrl) : null;
 
@@ -134,7 +131,7 @@ class _InitLegend extends StatelessWidget {
           width: double.infinity,
           height: 150,
           child: const Center(
-            child: Text("Primero seleccionar una imagen",
+            child: Text("First select an image",
                 style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ),

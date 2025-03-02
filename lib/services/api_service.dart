@@ -10,7 +10,7 @@ class ApiService extends ChangeNotifier {
 
 
   Future<CardDataDto?> extractCreditCardDataWithYOLOv10(File image) async {
-    print("Entra en extractCreditCardData()");
+    print("Enter in extractCreditCardData()");
     var request = http.MultipartRequest('POST', 
       Uri.parse(BASE_URL));
 

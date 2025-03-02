@@ -259,37 +259,23 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
   Future<CardDataDto?> _extractDataFromCardElements(CardElementsDto cardElementsDto) async {
     CardDataDto cardDataDto = CardDataDto.empty;
     try {
-      // Debug
-      // if (cardElementsDto.cardNumberFile != null) {
-      //   Uint8List imageBytes = await cardElementsDto.cardNumberFile!.readAsBytes();
-      //   imageBytes = preprocessImage(imageBytes);
-      //   final img.Image image = img.decodeImage(imageBytes)!;
-      //   cardElementsDto.cardNumberFile = await _saveTmpImage(image, 'card_number.jpg');
-      // }
-
       if (cardElementsDto.cardNumberFile != null) {
-        Uint8List imageBytes = await cardElementsDto.cardNumberFile!.readAsBytes();
-        imageBytes = preprocessImage(imageBytes);
-        File file = await _saveTmpImage(img.decodeImage(imageBytes)!, 'card_number.jpg');
+        File file = await preprocessImage(cardElementsDto.cardNumberFile!, "cardNumber.jpg");
         String? cardNumber = await _extractTextFromImage(file);
         cardDataDto.cardNumber = cardNumber ?? "";
       }
 
       if (cardElementsDto.cardholderFile != null) {
-        Uint8List imageBytes = await cardElementsDto.cardholderFile!.readAsBytes();
-        imageBytes = preprocessImage(imageBytes);
-        File file = await _saveTmpImage(img.decodeImage(imageBytes)!, 'cardholder.jpg');
+        File file = await preprocessImage(cardElementsDto.cardholderFile!, "cardholder.jpg");
         String? cardholder = await _extractTextFromImage(file);
         cardDataDto.cardholder = cardholder ?? "";
+        cardDataDto.cardholder = cardDataDto.cardholder.toUpperCase();
       }
 
       if (cardElementsDto.expiryDateFile != null) {
-        Uint8List imageBytes = await cardElementsDto.expiryDateFile!.readAsBytes();
-        imageBytes = preprocessImage(imageBytes);
-        File file = await _saveTmpImage(img.decodeImage(imageBytes)!, "expirydate.jpg");
+        File file = await preprocessImage(cardElementsDto.expiryDateFile!, "expiryDate.jpg");
         String? expiryDate = await _extractTextFromImage(file);
         cardDataDto.expiryDate = expiryDate ?? "";  
-        // cardDataDto.expiryDate = "07/07";
       } 
       return cardDataDto;
     } catch (e) {
@@ -308,7 +294,6 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     return inputImage;
   }
 
-
   Future<String?> _extractTextFromImage(File file) async {
     final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
 
@@ -319,8 +304,9 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     return recognizedText.text;
   }
 
+  Future<File> preprocessImage(File file, String filename, {bool save = false}) async {
+    Uint8List imageBytes = await file.readAsBytes();
 
-  Uint8List preprocessImage(Uint8List imageBytes, {bool save = false}) {
     img.Image? image = img.decodeImage(imageBytes);
     
     if (image == null) {
@@ -332,7 +318,11 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     double contrast = 1.5;
     img.Image contrastImage = adjustContrast(grayImage, contrast);
 
-    return Uint8List.fromList(img.encodeJpg(contrastImage));
+    File fileTmp = await _saveTmpImage(
+      img.decodeImage(Uint8List.fromList(img.encodeJpg(contrastImage)))!,
+      filename);
+
+    return fileTmp;
   }
 
   img.Image adjustContrast(img.Image image, double factor) {

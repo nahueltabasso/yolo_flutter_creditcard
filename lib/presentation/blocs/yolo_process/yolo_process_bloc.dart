@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:equatable/equatable.dart';
@@ -11,6 +12,7 @@ import 'package:flutter_yolo_creditcard/presentation/screens/home_screen.dart';
 import 'package:flutter_yolo_creditcard/presentation/screens/result_screen.dart';
 import 'package:flutter_yolo_creditcard/services/api_service.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 import 'package:image/image.dart' as img;
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -79,11 +81,13 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
 
       print('State despues de la inferencia $state');
       event.context.push(ResultScreen.routeName);
-    } else {
+    } 
 
+    if (!state.yolov10) {
       print("Se ejecuta inferencia con YOLOv8 en el dispositivo");
       print("Flutter vision $cardDetectorVision");
       if (cardDetectorVision == null) {
+        print("Entra 1");
         await _initYOLOModel(CARD_DETECTOR);
       }
       print("Flutter vision iniciado $cardDetectorVision");
@@ -99,14 +103,29 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
 
       // Now extract the elements of a card
       if (cardElementsDetectorVision == null) {
+        print("Entra 2");
         await _initYOLOModel(CARD_ELEMENTS_DETECTOR);
       }
       CardElementsDto? cardElementsDto = await _getCardElements(creditCard);
 
+      cardDetectorVision = null;
+      cardElementsDetectorVision = null;
+      
+      // Extract card data from card elements
+      CardDataDto? cardDataDto = await _extractDataFromCardElements(cardElementsDto!);
+
+      print(cardDataDto!.toJson().toString());
+      // Classify the payment network
+      _getPaymentNetwork(cardElementsDto.paymentNetworkFile, cardDataDto!);
+
+      print(cardDataDto!.toJson().toString());
+
+      state.cardDataDto = cardDataDto!;
       emit(state.copyWith(
         isLoading: false,
-        imageUrl: cardElementsDto!.expiryDateFile!.path,
+        cardDataDto: state.cardDataDto,
       ));
+      event.context.push(ResultScreen.routeName);
     }
   }
 
@@ -138,6 +157,10 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     // Read bytes from image
     final Uint8List imageBytes = await file.readAsBytes();
     final img.Image image = img.decodeImage(imageBytes)!;
+
+    // await _initTesseractOCR();
+    // await _ocrTesseract(imageBytes);
+
     if (image == null) {
       print("Error to decode the image");
       return null;
@@ -177,16 +200,12 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     }
 
     CardElementsDto cardElementsDto = CardElementsDto();
-    print("ELEMENTOS");
-    print("1 - ${cardElementsDto.cardNumberFile}");
-    print("2 - ${cardElementsDto.cardholderFile}");
-    print("3 - ${cardElementsDto.expiryDateFile}");
-
     try {
       final results = await cardDetectorVision!.yoloOnImage(
         bytesList: imageBytes, 
         imageHeight: image.height, 
         imageWidth: image.width);
+      
       for (var result in results) {
         print("Results - ${result['box']} - tag - ${result['tag']}");
         final box = result['box'];
@@ -215,7 +234,7 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
         }
       }
 
-      print("ELEMENTOS");
+      print("Card Elements");
       print("1 - ${cardElementsDto.cardNumberFile}");
       print("2 - ${cardElementsDto.cardholderFile}");
       print("3 - ${cardElementsDto.expiryDateFile}");
@@ -246,7 +265,113 @@ class YoloProcessBloc extends Bloc<YoloProcessEvent, YoloProcessState> {
     return file;
   }
 
-  void _extractDataThroughTesseract() {
-    
+  Future<CardDataDto?> _extractDataFromCardElements(CardElementsDto cardElementsDto) async {
+    CardDataDto cardDataDto = CardDataDto.empty;
+    try {
+      // Debug
+      // if (cardElementsDto.cardNumberFile != null) {
+      //   Uint8List imageBytes = await cardElementsDto.cardNumberFile!.readAsBytes();
+      //   imageBytes = preprocessImage(imageBytes);
+      //   final img.Image image = img.decodeImage(imageBytes)!;
+      //   cardElementsDto.cardNumberFile = await _saveTmpImage(image, 'card_number.jpg');
+      // }
+
+      if (cardElementsDto.cardNumberFile != null) {
+        Uint8List imageBytes = await cardElementsDto.cardNumberFile!.readAsBytes();
+        imageBytes = preprocessImage(imageBytes);
+        File file = await _saveTmpImage(img.decodeImage(imageBytes)!, 'card_number.jpg');
+        String? cardNumber = await _extractTextFromImage(file);
+        cardDataDto.cardNumber = cardNumber ?? "";
+      }
+
+      if (cardElementsDto.cardholderFile != null) {
+        Uint8List imageBytes = await cardElementsDto.cardholderFile!.readAsBytes();
+        imageBytes = preprocessImage(imageBytes);
+        File file = await _saveTmpImage(img.decodeImage(imageBytes)!, 'cardholder.jpg');
+        String? cardholder = await _extractTextFromImage(file);
+        cardDataDto.cardholder = cardholder ?? "";
+      }
+
+      if (cardElementsDto.expiryDateFile != null) {
+        Uint8List imageBytes = await cardElementsDto.expiryDateFile!.readAsBytes();
+        imageBytes = preprocessImage(imageBytes);
+        File file = await _saveTmpImage(img.decodeImage(imageBytes)!, "expirydate.jpg");
+        String? expiryDate = await _extractTextFromImage(file);
+        cardDataDto.expiryDate = expiryDate ?? "";  
+        // cardDataDto.expiryDate = "07/07";
+      } 
+      return cardDataDto;
+    } catch (e) {
+      print("Error $e");
+      return null;
+    }
   }
+
+  void _getPaymentNetwork(File? file, CardDataDto cardDataDto) {
+    // TODO: resolve the payment network
+    cardDataDto.paymentNetwork = "------";
+  }
+
+  InputImage fileToInputImage(File file) {
+    InputImage inputImage = InputImage.fromFile(file);
+    return inputImage;
+  }
+
+
+  Future<String?> _extractTextFromImage(File file) async {
+    final textRecognizer = TextRecognizer(script: TextRecognitionScript.latin);
+
+    InputImage inputImage = fileToInputImage(file);
+    final RecognizedText recognizedText = await textRecognizer.processImage(inputImage);
+    print("OCR ---- ${recognizedText.text}");
+    textRecognizer.close();
+    return recognizedText.text;
+  }
+
+
+  Uint8List preprocessImage(Uint8List imageBytes, {bool save = false}) {
+    // Decodificar la imagen en formato Image de la librería 'image'
+    img.Image? image = img.decodeImage(imageBytes);
+    
+    if (image == null) {
+      throw Exception("Imagen no válida");
+    }
+
+    // Convertir a escala de grises
+    img.Image grayImage = img.grayscale(image);
+
+    // Aumentar el contraste (ajustar ganancia)
+    double contrast = 1.5;
+    img.Image contrastImage = adjustContrast(grayImage, contrast);
+
+    // Codificar la imagen procesada a bytes
+    return Uint8List.fromList(img.encodeJpg(contrastImage));
+  }
+
+  /// Ajusta el contraste de la imagen.
+  ///
+  /// - `image`: Imagen en escala de grises.
+  /// - `factor`: Factor de contraste (1.0 = sin cambios, >1 aumenta el contraste).
+  ///
+  /// Retorna la imagen con contraste ajustado.
+  img.Image adjustContrast(img.Image image, double factor) {
+    int width = image.width;
+    int height = image.height;
+    
+    for (int y = 0; y < height; y++) {
+      for (int x = 0; x < width; x++) {
+        img.Pixel pixel = image.getPixel(x, y); // Obtiene el color del píxel
+        num gray = img.getLuminance(pixel); // Extrae el nivel de gris
+        
+        // Aplicar ajuste de contraste
+        int newGray = ((gray - 128) * factor + 128).clamp(0, 255).toInt();
+        
+        // Crear un nuevo píxel en escala de grises y actualizar la imagen
+        image.setPixel(x, y, img.ColorInt8.rgb(newGray, newGray, newGray));
+      }
+    }
+    return image;
+  }
+
+
 }

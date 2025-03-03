@@ -1,6 +1,6 @@
-= **CREDIT CARD SERVICE ON FLUTTER**
+= 💳 **CREDIT CARD SERVICE ON FLUTTER**
 
-== **DESCRIPTION**
+== 📘 **DESCRIPTION**
 
 The *Flutter YOLO Credit Card Extractor* is a mobile applicacion developed in Flutter for *Android* that allow detection and data extraction from credit or debit card from a picture. It uses advanced object detection algorithms and AI-assisted text recognition.
 
@@ -10,11 +10,10 @@ This app allow to made all process in the same device uses *YOLOv8* or throuhg A
 * Text extraction such as card numbers, cardholder name and expiration date using Google ML Kit.
 * Simple and attractive user interface.
 
+**Note:** To try out **YOLOv10** via Rest API, you will first need to launch the **Credit Card Detector & Data Extrator V2.0.0** project, for more information on how to setup and run this project click link:https://github.com/nahueltabasso/credit-card-service/tree/release-v2.0.0[here]
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-== **TECHNOLOGIES**
+== 👨🏻‍💻 **TECHNOLOGIES**
 
 image:https://badges.aleen42.com/src/github.svg[]
 image:https://badges.aleen42.com/src/visual_studio_code.svg[]
@@ -34,7 +33,7 @@ image:https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=andro
 * Google ML Kit Text Recognition
 
 
-== **Project Structure**
+== 🗂️ **Project Structure**
 [listing, tree]
 ----
 ├── android/
@@ -53,7 +52,7 @@ image:https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=andro
 ----
 
 
-## Getting Started
+## 🛠️ **Getting Started**
 
 1. **Clone this repository**
 
@@ -93,9 +92,16 @@ Connect a device or open an emulator, and run:
     flutter run
 ```
 
-== **How to use it!**
+== 📱 **How to use it!**
 
+**Note:** All images used in the following demonstration are fake card images taken from the internet.
 
-== **License**
+image::demo.gif[Flutter YOLO Credit Card Extractor Demo, align="center"]
+
+== 📋 **License**
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+== 🙎🏻 **Contact**
+
+If you have some question about this you can contact me to my email nahueltabasso@gmail.com or my link:https://www.instagram.com/nahuel.tabasso/[Instagram]
